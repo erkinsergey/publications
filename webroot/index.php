@@ -9,7 +9,7 @@
   require '../vendor/autoload.php';
 
   /**
-   * Начать маршрутизацию
+   * Простейшая реализация обработки маршрутов, работает только с параметрами GET-запросов
    */
   startDemoSite(
       [
@@ -22,8 +22,9 @@
           ],
           [   // HTML-страница
               'GET /',
-              function (array $params) {
-                  print_r($params);
+              function () {
+                  echo (new \Publications\Controller())
+                      ->getMainPage();
               }
           ]
       ]

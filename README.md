@@ -1,5 +1,9 @@
 # Быстрый старт, команды
 
+## Предварительные требования
+
+Запущенная база данных PostgreSQL актуальной версии, интерфейс командной строки (cli) PHP 8+.
+
 ## Клонирование репозитория и переход в проект
 
     git clone https://github.com/erkinsergey/publications.git && cd publications
@@ -11,7 +15,6 @@
 ## Импорт данных в базу
 
     composer run-script data-import
-
 
 ## Запуск тестового сервера
 
