@@ -10,8 +10,6 @@
           resultContainer
       } = initComponents();
 
-      console.log(button);
-
       /**
        * Наблюдаемый объект - строка запроса
        */
@@ -48,7 +46,8 @@
       button.on('click', () => serverSearch(observableQuery.value));
 
       /**
-       *
+       * Возвращает объект с ключами - объектными обертками над DOM-элементами,
+       * с которыми удобней работать.
        */
       function initComponents()
       {
@@ -84,18 +83,54 @@
 
                       return wrapper;
 
-                      function update(posts)
+                      function update(posts, query)
                       {
-                          console.log(posts);
+                          el.innerHTML =
+                              posts.length ?
+                                  posts
+                                      .map(post =>
+                                          `<div class="result-item">
+                                              <h3 class="result-post-title">${escapeHtml(post.postTitle)}</h3>` +
+                                              (post.comments
+                                                  .map(comment =>
+                                                      `<h4 class="result-comment-title">${markQuery(query, escapeHtml(comment.name))}</h4>
+                                                       <p class="result-comment-body">${markQuery(query, escapeHtml(comment.body))}</p>
+                                                       <div class="result-comment-meta">${escapeHtml(comment.email)}</div>`
+                                                  )
+                                                  .join('')) +
+                                        '</div>'
+                                      ).join('')
+                                  : 'Ничего не найдено';
+                      }
+
+                      function escapeHtml(text)
+                      {
+                          const map = {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#039;'
+                          };
+
+                          return text.replace(/[&<>"']/g, (match) => map[match]);
+                      }
+
+                      function markQuery(query, text)
+                      {
+                          return text.replace(
+                              new RegExp(query, 'gi'),
+                              match => `<span class="highlight">${match}</span>`
+                          );
                       }
                   }
-              )(document.getElementById(params.resultContainerId)),
+              )(document.getElementById(params.resultsContainerId)),
               inputEl: document.getElementById(params.searchInputId),
           };
       }
 
       /**
-       *
+       * Выполняет запрос на сервер и обрабатывает результат
        */
       async function serverSearch(query)
       {
@@ -106,11 +141,12 @@
                   throw new Error(`Ошибка HTTP: ${response.status}`);
               }
 
-              resultContainer.update(await response.json());
+              resultContainer.update(await response.json(), query);
           } catch (error) {
               console.error(error);
           }
       }
 
+      // Начальное значение, кнопка неактивна
       observableQuery.value = '';
   }

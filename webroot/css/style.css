@@ -1,8 +1,9 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
-    align-items: start;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     height: 100vh;
     margin: 0;
     background-color: #f4f4f9;
@@ -11,8 +12,7 @@ body {
     display: flex;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 24px;
-    overflow: hidden;
-    margin-top: 2em;
+    margin: 2em;
 }
 .search-input {
     padding: 12px 16px;
@@ -41,6 +41,83 @@ body {
     color: lightgray;
 }
 
-.results-container {
+.search-results {
+  width: 90%;
+  margin: 30px auto;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
 
+.results-title {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.result-item {
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.result-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.result-item.featured {
+  border-left: 4px solid #4285f4;
+  background-color: #f8f9fa;
+}
+
+.result-post-title {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+}
+
+
+.result-comment-title {
+  color: #545454;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.result-comment-body {
+  color: #545454;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.result-comment-meta {
+  display: flex;
+  justify-content: end;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: #70757a;
+}
+
+.result-rating {
+  color: #faab00;
+  font-weight: bold;
+}
+
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+  padding: 0 2px;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  .search-results {
+    padding: 0 15px;
+  }
+
+  .result-item {
+    padding: 15px;
+  }
 }

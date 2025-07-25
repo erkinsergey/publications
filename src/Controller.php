@@ -13,11 +13,10 @@
   final class Controller
   {
       /**
-       *
+       * Задание приватного поля коннекта к базе данных
        */
       public function __construct(private \PDO $db)
       {
-
       }
 
       /**
@@ -25,6 +24,7 @@
        */
       public function getMainPage(): string
       {
+          // Подстановка в шаблон данных
           return str_replace(
               [
                   '{{SEARCH_ROUTE}}',
@@ -39,8 +39,8 @@
       }
 
       /**
-       * Для простоты шаблон в виде строки, возвращаемой методом.
-       * Лучше пользоваться шаблонизаторами типа Twig.
+       * Для простоты шаблон в виде строки возвращается методом.
+       * На деле лучше пользоваться шаблонизаторами типа Twig.
        */
       private function getMainPageTemplate(): string
       {
@@ -65,7 +65,9 @@
                           >
                           <button disabled id="search_btn" class="search-button">Найти</button>
                       </div>
-                      <div id="results_container" class="results-container">
+                      <div class="search-results">
+                          <h2 class="results-title">Результаты поиска</h2>
+                          <div id="results_container" class="results-container"></div>
                       </div>
                       <script src="js/main.js"></script>
                       <script>
@@ -74,7 +76,7 @@
                               minLength: {{MIN_LENGTH}},
                               searchInputId: 'search_input',
                               searchButtonId: 'search_btn',
-                              resultContainderId: 'results_container'
+                              resultsContainerId: 'results_container'
                           };
                           document.addEventListener('DOMContentLoaded', () => init(params));
                       </script>

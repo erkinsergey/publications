@@ -11,9 +11,9 @@
         "ext-curl": "*"
     },
     "scripts": {
-        "create-db": "sudo -u postgres psql -p 5433 -f schema.sql",
+        "create-db": "sudo -u postgres psql -h localhost -p 5433 -f schema.sql",
         "import-data": "php data_import.php",
         "dev-server": "php -S localhost:8080 -t ./webroot",
-        "all": "sudo -u postgres psql -p 5433 -f schema.sql && php data_import.php && php -S localhost:8080 -t ./webroot"
+        "all": "sudo -u postgres psql -h localhost -p 5433 -f schema.sql && php data_import.php && php -S localhost:8080 -t ./webroot"
     }
 }
