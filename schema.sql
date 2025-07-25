@@ -189,3 +189,8 @@ ALTER TABLE ONLY public.comments
 --
 -- PostgreSQL database dump complete
 --
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO pub_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO pub_admin;
+
+GRANT SELECT ON TABLE public.posts TO pub_user;
+GRANT SELECT ON TABLE public.comments TO pub_user;

@@ -7,15 +7,8 @@
 
   declare(strict_types=1);
 
-  require 'vendor/autoload.php';
-
-  const DB_DSN = 'pgsql:dbname=publications;host=localhost;port=5433';
-  const ADMIN_LOGIN = 'pub_admin';
-  const ADMIN_PASSWORD = 'adm4321';
-
-  const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts';
-  const COMMENTS_URL = 'https://jsonplaceholder.typicode.com/comments';
-
+  require_once 'vendor/autoload.php';
+  require_once 'config.php';
 
   try {
       // Слить два отдельных списка в один - посты с комментариями
@@ -24,6 +17,9 @@
           getRecordsFromJSONFile(COMMENTS_URL)
       );
 
+      /**
+       * Подключаемся с правами администратора базы данных
+       */
       $db = new \PDO(DB_DSN, ADMIN_LOGIN, ADMIN_PASSWORD);
 
       $options = [

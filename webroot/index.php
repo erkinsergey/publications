@@ -6,7 +6,13 @@
 
   declare(strict_types=1);
 
-  require '../vendor/autoload.php';
+  require_once '../vendor/autoload.php';
+  require_once '../config.php';
+
+  /**
+   * В публичном интерфейсе подключаемся под обычным пользователем с минимальным для работы набором прав
+   */
+  $db = new \PDO(DB_DSN, NORMAL_USER_LOGIN, NORMAL_USER_PASSWORD);
 
   /**
    * Простейшая реализация обработки маршрутов, работает только с параметрами GET-запросов
@@ -16,14 +22,18 @@
           [
               // Результат поиска
               'GET /search',
-              function (array $params) {
-                  print_r($params);
+              function (array $params) use ($db): void {
+                  header('Content-Type: application/json; charset=utf-8');
+                  echo json_encode(
+                      (new \Publications\Controller($db))
+                          ->searchPostsAndComments($params['q'] ?? '')
+                  );
               }
           ],
           [   // HTML-страница
               'GET /',
-              function () {
-                  echo (new \Publications\Controller())
+              function () use ($db): void {
+                  echo (new \Publications\Controller($db))
                       ->getMainPage();
               }
           ]
@@ -37,12 +47,18 @@
   {
       foreach ($routes as $route) {
           if (isMatchesRoute($route[0]) && is_callable($route[1])) {
-              $route[1](getRequestParams());
+              try {
+                  $route[1](getRequestParams());
+              } catch (\Exception $e) {
+                  http_response_code($serverError = 500);
+                  echo $e->getMessage();
+              }
+
               exit;
           }
       };
 
-      http_response_code(404);
+      http_response_code($notFound = 404);
       exit;
   }
 

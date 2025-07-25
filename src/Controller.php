@@ -1,7 +1,9 @@
 <?php
 
   /**
-   * Контроллер главной страницы
+   * Контроллер маршрутов главной страницы.
+   * Для простоты контроллер выполняет много функций,
+   * в реальном проекте он должен делегировать задачи разным слоям приложения.
    */
 
   declare(strict_types=1);
@@ -11,21 +13,34 @@
   final class Controller
   {
       /**
+       *
+       */
+      public function __construct(private \PDO $db)
+      {
+
+      }
+
+      /**
        * Возвращает текст - контент главной страницы
        */
       public function getMainPage(): string
       {
           return str_replace(
               [
+                  '{{SEARCH_ROUTE}}',
+                  '{{MIN_LENGTH}}'
               ],
               [
+                  '/search',
+                  3 // Лучше прописать к конфиге
               ],
               $this->getMainPageTemplate()
           );
       }
 
       /**
-       *
+       * Для простоты шаблон в виде строки, возвращаемой методом.
+       * Лучше пользоваться шаблонизаторами типа Twig.
        */
       private function getMainPageTemplate(): string
       {
@@ -35,61 +50,89 @@
                   <head>
                       <meta charset="UTF-8">
                       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                      <link rel="stylesheet" href="css/style.css">
                       <title>Поиск</title>
-                      <style>
-                          body {
-                              font-family: Arial, sans-serif;
-                              display: flex;
-                              justify-content: center;
-                              align-items: start;
-                              height: 100vh;
-                              margin: 0;
-                              background-color: #f4f4f9;
-                          }
-                          .search-container {
-                              display: flex;
-                              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                              border-radius: 24px;
-                              overflow: hidden;
-                              margin-top: 2em;
-                          }
-                          .search-input {
-                              padding: 12px 16px;
-                              border: 1px solid #ddd;
-                              border-right: none;
-                              border-radius: 24px 0 0 24px;
-                              width: 300px;
-                              font-size: 16px;
-                              outline: none;
-                          }
-                          .search-button {
-                              padding: 12px 20px;
-                              background-color: #4285f4;
-                              color: white;
-                              border: none;
-                              border-radius: 0 24px 24px 0;
-                              cursor: pointer;
-                              font-size: 16px;
-                              transition: background-color 0.3s;
-                          }
-                          .search-button:hover {
-                              background-color: #3367d6;
-                          }
-                      </style>
                   </head>
                   <body>
                       <div class="search-container">
                           <input
+                              id="search_input"
                               type="search"
                               class="search-input"
                               placeholder="Введите запрос..."
-                              minlength=3
+                              minlength={{MIN_LENGTH}}
                               required
                           >
-                          <button class="search-button">Найти</button>
+                          <button disabled id="search_btn" class="search-button">Найти</button>
                       </div>
+                      <div id="results_container" class="results-container">
+                      </div>
+                      <script src="js/main.js"></script>
+                      <script>
+                          const params = {
+                              searchRoute: '{{SEARCH_ROUTE}}',
+                              minLength: {{MIN_LENGTH}},
+                              searchInputId: 'search_input',
+                              searchButtonId: 'search_btn',
+                              resultContainderId: 'results_container'
+                          };
+                          document.addEventListener('DOMContentLoaded', () => init(params));
+                      </script>
                   </body>
               </html>
           TEMPLATE;
+      }
+
+      /**
+       * Работу с базой данных лучше делегировать другим компонентам, например, репозиториям.
+       */
+      public function searchPostsAndComments(string $query): array
+      {
+          // Подготовка для подстановки в LIKE-запрос
+          $preparedQuery = str_replace(['%', '_'], '\\', trim($query));
+
+          // Некая оптимизация
+          if ('' === $preparedQuery) {
+              return [];
+          }
+
+          /**
+           * Запрос выдает список результатов вида
+           * "post title 1" => "[{comment 1}, {comment 2}, ...]",
+           * "post title 2" => "[{comment 1}, {comment 2}, ...]",
+           * ...
+           * где comments является JSONB-строкой
+           */
+          $preparedStatement = $this->db->prepare(
+              'SELECT POST1."title" AS "post_title"
+                      , json_agg(
+                        jsonb_build_object(
+                            \'name\', COMM1."name",
+                            \'body\', COMM1."body",
+                            \'email\', COMM1."email"
+                        )
+                      ) AS "comments"
+                 FROM "posts" AS POST1
+                 JOIN "comments" AS COMM1 ON POST1.id = COMM1.post_id
+                -- ищем как в имени, так и в теле комментария
+                WHERE CONCAT(COMM1."name", \' \', COMM1."body") ILIKE ?
+                GROUP BY POST1."title"'
+          );
+
+          // В случае ошибки бросит исключение
+          $preparedStatement->execute(["%{$preparedQuery}%"]);
+
+          /**
+           * Выбирать все записи сразу при больших данных может быть затратно по памяти!
+           * Лучше разбивать на страницы с помощью LIMIT и OFFSET и, конечно, сортировки.
+           */
+          return $preparedStatement->fetchAll(
+              \PDO::FETCH_FUNC,
+              // Требуется преобразование данных из строк JSON в массивы PHP
+              fn (string $postTitle, string $comments) => ([
+                  'postTitle' => $postTitle,
+                  'comments' => json_decode($comments, $assoc = true)
+              ])
+          );
       }
   }
