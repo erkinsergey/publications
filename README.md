@@ -1,11 +1,22 @@
-# Создание базы данных и пользователей
-''' composer run-script create-db
+# Быстрый старт, команды
 
-# Импорт данных в базу
-''' composer run-script data-import
+## Клонирование репозитория и переход в проект
 
-# Запуск тестового сервера
-''' composer run-script dev-server
 
-# Все вместе одной командой
-''' composer run-script all
+    git clone https://github.com/erkinsergey/publications.git && cd publications
+
+## Создание базы данных и пользователей
+
+    composer run-script create-db
+
+## Импорт данных в базу
+
+    composer run-script data-import
+
+
+## Запуск тестового сервера
+
+    composer run-script dev-server
+
+## Все вместе одной командой
+    composer run-script all
